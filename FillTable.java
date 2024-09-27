@@ -24,7 +24,6 @@ public class FillTable {
     public void fillTable() {
         for (int t = 0; t < numTables - 1; t++) {
             for (int p = 0; p < philosophersPerTable; p++) {
-                System.err.println(p + t * philosophersPerTable);
                 Philosopher philosopher = new Philosopher(
                     p + t * philosophersPerTable, 
                     t,
@@ -32,7 +31,6 @@ public class FillTable {
                     forks[t][(p + 1) % philosophersPerTable], 
                     tables[t]
                 );
-                // tables[t].addPhilosopher(philosopher);
                 appendPhilosopher(t, philosopher);
                 philosopher.start();
             }
