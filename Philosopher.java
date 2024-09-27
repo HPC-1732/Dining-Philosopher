@@ -66,7 +66,9 @@ public class Philosopher extends Thread {
 
             isWaitingForRightFork = true;
             if (table.isDeadlocked()) {
+                System.out.println();
                 System.out.println("Deadlock detected at table " + (tableNumber + 1));
+                System.out.println();
                 if(tableNumber == 5){
                     lock.lock();
                     try{              
