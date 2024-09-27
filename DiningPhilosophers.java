@@ -5,7 +5,7 @@ public class DiningPhilosophers {
     
     public static void main(String[] args) {
 
-        final int numTables = 2;
+        final int numTables = 3;
         final int philosophersPerTable = 2;
         FillTable fillTable = new FillTable(numTables, philosophersPerTable);
         fillTable.fillTable();
