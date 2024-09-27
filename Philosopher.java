@@ -3,11 +3,13 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 public class Philosopher extends Thread {
-    private final int id;
-    private final Fork leftFork;
-    private final Fork rightFork;
-    private final Table table;
-    private boolean movedToSixthTable = false;
+    public static final int id;
+    public static Fork leftFork;
+    public static Fork rightFork;
+    public static Table table;
+    public boolean movedToSixthTable = false;
+    public boolean isWaitingForRightFork = false;
+    public boolean hasLeftFork = false;
     private static final Random random = new Random();
 
     public Philosopher(int id, Fork leftFork, Fork rightFork, Table table) {
@@ -23,13 +25,9 @@ public class Philosopher extends Thread {
             while (!movedToSixthTable) {
                 think();
                 hungry();
-                if (pickUpForks()) {
-                    eat();
-                    putDownForks();
-                }
-                if (table.isDeadlocked()) {
-                    moveToSixthTable();
-                }
+                while(!pickUpForks()){}
+                eat();
+                putDownForks();
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -47,15 +45,28 @@ public class Philosopher extends Thread {
 
     private boolean pickUpForks() throws InterruptedException {
         // Try to pick up the left fork first
-        if (!leftFork.pickUp()) {
-            return false;
+        if(hasLeftFork){
+            System.out.println("Philosopher " + id + " is trying to pick the right fork");
         }
+        else if(!leftFork.pickUp()) {
+            System.err.println("Philosopher " + id + " failed to pick the left fork");
+            return false;   
+        }
+        if(!hasLeftFork) 
+            System.err.println("Philosopher " + id + " picked the left fork");
+        hasLeftFork = true;
 
-        // Wait for 4 seconds, then try to pick up the right fork
-        System.out.println("Philosopher " + id + " picked up the left fork.");
+        Thread.sleep(4000); // Wait for 4 seconds, then try to pick up the right fork 
         if (!rightFork.pickUp()) {
-            leftFork.putDown(); // Couldn't pick up right fork, put down the left
-            System.out.println("Philosopher " + id + " couldn't pick up the right fork. Putting down the left fork.");
+
+            isWaitingForRightFork = true;
+            if (table.isDeadlocked()) {
+                System.err.println("Deadlock detected");
+                moveToSixthTable();
+            }
+
+            System.out.println("Philosopher " + id + " failed to pick the right fork");
+           
             return false;
         }
 
@@ -71,6 +82,8 @@ public class Philosopher extends Thread {
     private void putDownForks() {
         leftFork.putDown();
         rightFork.putDown();
+        hasLeftFork = false;
+        isWaitingForRightFork = false;
         System.out.println("Philosopher " + id + " put down both forks.");
     }
 
@@ -82,5 +95,9 @@ public class Philosopher extends Thread {
 
     public int getPhilosopherId() {
         return id;
+    }
+    public boolean isWaitingForRightFork() {
+        System.err.println(id + " " + isWaitingForRightFork);
+        return isWaitingForRightFork;
     }
 }
